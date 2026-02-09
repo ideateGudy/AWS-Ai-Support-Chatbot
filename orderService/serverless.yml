@@ -1,0 +1,39 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: gudymedia
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: orderService
+
+provider:
+  name: aws
+  runtime: nodejs24.x
+  region: us-east-1
+  environment:
+    REGION: ${self:provider.region}
+    TableName: Orders
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'dynamodb:PutItem'
+        - 'dynamodb:GetItem'
+      Resource: arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/Orders
+
+
+
+resources:
+  Resources:
+    OrderTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Orders
+        AttributeDefinitions:
+          - AttributeName: orderId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: orderId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+
+functions:
+  orderBotHandler:
+    handler: handlers/orderbotHandler.orderBotHandler
